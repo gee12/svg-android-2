@@ -91,6 +91,8 @@ import javax.xml.parsers.SAXParserFactory;
 public class SVGParser {
 	static final String TAG = "SVG";
 	static float DPI = 72.0f;   // Should be settable
+	static final float DEF_WIDTH = 48;
+	static final float DEF_HEIGHT = 48;
 
 	/**
 	 * Parse SVG data from an input stream.
@@ -1560,9 +1562,21 @@ public class SVGParser {
 			}
 
 			if (localName.equals("svg")) {
-				int width = (int) Math.ceil(getFloatAttr("width", atts));
-				int height = (int) Math.ceil(getFloatAttr("height", atts));
-				canvas = picture.beginRecording(width, height);
+//				int width = (int) Math.ceil(getFloatAttr("width", atts));
+//				int height = (int) Math.ceil(getFloatAttr("height", atts));
+				Float widthF = getFloatAttr("width", atts);
+				Float heightF = getFloatAttr("height", atts);
+				if (widthF == null || heightF == null) {
+					NumberParse viewBox = getNumberParseAttr("viewBox", atts);
+					if (viewBox != null && viewBox.numbers.size() >= 4) {
+						widthF = viewBox.getNumber(2) - viewBox.getNumber(0);
+						heightF = viewBox.getNumber(3) - viewBox.getNumber(1);
+					} else {
+						widthF = DEF_WIDTH;
+						heightF = DEF_HEIGHT;
+					}
+				}
+				canvas = picture.beginRecording((int) Math.ceil(widthF), (int) Math.ceil(heightF));
 			} else if (localName.equals("defs")) {
 				inDefsElement = true;
 			} else if (localName.equals("linearGradient")) {
